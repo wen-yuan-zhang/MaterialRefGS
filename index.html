@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Reflective Gaussian Splatting with Multi-view Consistent Material Inference">
+  <meta name="keywords" content="Gaussian Splatting, Physically Based Rendering, Novel View Synthesis">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MaterialRefGS</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <!-- <link rel="icon" href="./static/images/favicon.svg"> -->
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://wen-yuan-zhang.github.io/">
+      <span class="icon">
+          <i class="fas fa-home"></i>
+      </span>
+      </a>
+
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">
+          More Research
+        </a>
+        <div class="navbar-dropdown">
+          <!-- <a class="navbar-item" href="https://wen-yuan-zhang.github.io/Fast-Learning-NeRF/">
+            Fast-Learning NeRF
+          </a>
+          <a class="navbar-item" href="https://wen-yuan-zhang.github.io/VolumeRenderingPriors/">
+            VolumeRenderingPriors
+          </a> -->
+          <a class="navbar-item" href="https://wen-yuan-zhang.github.io/GS-Pull/">
+            GS-Pull
+          </a>
+          <a class="navbar-item" href="https://wen-yuan-zhang.github.io/NeRFPrior/">
+            NeRFPrior
+          </a>
+          <a class="navbar-item" href="https://wen-yuan-zhang.github.io/MonoInstance/">
+            MonoInstance
+          </a>
+          <a class="navbar-item" href="https://chenmingthu.github.io/milm/">
+            MIDAS
+          </a>
+          <a class="navbar-item" href="https://klingavatar.github.io/">
+            Kling-Avatar
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</nav>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">MaterialRefGS: Reflective Gaussian Splatting with Multi-view Consistent Material Inference</h1>
+          <div class="column is-full_width">
+            <h2 class="title is-4">NeurIPS 2025</h2>
+          </div>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://wen-yuan-zhang.github.io/">Wenyuan Zhang</a><sup>1*</sup>,</span>
+            <span class="author-block">
+              <a href="https://github.com/tangjm24">Jimin Tang</a></a><sup>1*</sup>,</span>
+            <span class="author-block">
+              <a href="https://weiqi-zhang.github.io/">Weiqi Zhang</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://scholar.google.com/citations?user=j-cyhzwAAAAJ">Yi Fang</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://yushen-liu.github.io/">Yu-Shen Liu</a><sup>1†</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://h312h.github.io/">Zhizhong Han</a><sup>3</sup>
+            </span>
+          </div>
+          <div class="column is-full_width">
+            <h2 class="is-size-6">* Equal Contribution  &nbsp;&nbsp; † Corresponding Author</h2>
+          </div>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>School of Software, Tsinghua University,</span>
+            <span class="author-block"><sup>2</sup>New York University Abu Dhabi,</span>
+            <span class="author-block"><sup>3</sup>Wayne State University</span>
+          </div>
+
+          
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href=""
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/wen-yuan-zhang/MaterialRefGS" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="columns">
+        <h2 class="title is-3" style="margin-top: -37px">
+        <img src="./resources/teaser.png" class="center"></h2>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3" style="margin-top: -30px">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Modeling reflections from 2D images is essential for photorealistic rendering and novel view synthesis. Recent approaches enhance Gaussian primitives with reflection-related material attributes to enable physically based rendering (PBR) with Gaussian Splatting. However, the material inference often lacks sufficient constraints, especially under limited environment modeling, resulting in illumination aliasing and reduced generalization. In this work, we revisit the problem from a multi-view perspective and show that multi-view consistent material inference with more physically-based environment modeling is key to learning accurate reflections with Gaussian Splatting. To this end, we enforce 2D Gaussians to produce multi-view consistent material maps during deferred shading. We also track photometric variations across views to identify highly reflective regions, which serve as strong priors for reflection strength terms. To handle indirect illumination caused by inter-object occlusions, we further introduce an environment modeling strategy through ray tracing with 2DGS, enabling photorealistic rendering of indirect radiance. Experiments on widely used benchmarks show that our method faithfully recovers both illumination and geometry, achieving state-of-the-art rendering quality in novel views synthesis.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+
+    <!-- Method. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3" style="margin-top: -20px">Method</h2>
+        <img src="./resources/method.png" class="center">
+        <div class="content has-text-justified">
+          <p style="margin-top: 30px">
+            Overview of our method. Our 3D representation consists of 2D Gaussian primitives with physical material attributes, including diffuse color, metallic, roughness, and albedo. We adopt a deferred shading architecture, where multi-view material maps are first rendered and then evaluated through a Bidirectional Reflectance Distribution Function (BRDF) to obtain the final shading results.
+          </p>
+          <p>
+            To address the inconsistency of material maps observed from different viewpoints caused by the alpha blending of Gaussian ellipsoids, we propose two key components:
+            <strong>(a) multi-view material consistency constraint</strong>, which enforces appearance consistency for corresponding surface regions across the projections of multi-view material maps; and <strong>(b) reflection strength prior</strong>, which traces photometric variations along camera trajectories to provide an explicit optimization target for the reflection strength term.            
+          </p>
+          <p>
+            In addition, to compensate for inter-object reflections caused by self-occlusions, we introduce <strong>(c) environment modeling strategy based on 2DGS ray tracing</strong>. This enables the joint optimization of illumination and geometry.
+          </p>
+        </div>
+
+      </div>
+    </div>
+    <!--/ Animation. -->
+
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+
+    <!-- Results. -->
+    <div class="columns is-centered ">
+      <div class="column is-full-width">
+        <h2 class="title is-3 has-text-centered" style="margin-top: -30px">Visualization Results</h2>
+
+
+        <h3 class="title is-4">Comparisons on Synthetic Datasets</h3>
+        <div class="content has-text-justified">
+          <img src="./resources/synthetic.png" class="center">
+          <img src="./resources/synthetic2.png" class="center">
+          <p>
+            We evaluate our method in ShinyBlender and GlossySynthetic datasets, where our method accurately captures the environment reflections, as well as the secondary light reflections.
+          </p>
+        </div>
+        
+
+        <h3 class="title is-4">Comparisons on Ref-Real Dataset</h3>
+        <div class="content has-text-justified">
+          <img src="./resources/refreal.png" class="center">
+          <p>
+            We evaluate our method on real-world Ref-Real dataset, where our method accurately reconstructs the reflection textures from the surrounding environments on highly reflective surfaces. 
+          </p>
+        </div>
+
+        <h3 class="title is-4">Comparisons on Mip-NeRF 360 Dataset</h3>
+        <div class="content has-text-justified">
+          <img src="./resources/mipnerf360.png" class="center">
+          <p>
+            We also evaluate our method on real-world Mip-NeRF 360 dataset, where existing reflective 3DGS approaches often exhibit degraded performance in complex scenes with limited reflective surfaces. More importantly, we demonstrate that accurate material decomposition facilitates learning more precise geometric reconstruction.
+          </p>
+        </div>
+
+        <h3 class="title is-4">Comparisons of Material Decomposition</h3>
+        <div class="content has-text-justified">
+          <!-- <img src="./resources/decomposition.png" class="center"> -->
+          <img src="./resources/decomposition2.png" class="center">
+          <p>
+            We also evaluate our method on real-world Mip-NeRF 360 dataset, where existing reflective 3DGS approaches often exhibit degraded performance in complex scenes with limited reflective surfaces. More importantly, we demonstrate that accurate material decomposition facilitates learning more precise geometric reconstruction.
+          </p>
+        </div>
+
+          
+        
+
+        <h3 class="title is-4">More Visualization Results and Applications</h3>
+        <div class="content has-text-justified">
+          <p>
+          </p>
+        </div>
+        
+        <div class="content has-text-centered">
+          <video id="replay-video"
+                 autoplay
+                 controls
+                 muted
+                 preload
+                 playsinline
+                 loop
+                 width="90%">
+            <source src="./resources/video.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</section>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+     <pre><code>@inproceedings{zhang2025materialrefgs,
+      title={{MaterialRefGS}: Reflective Gaussian Splatting with Multi-view Consistent Material Inference},
+      author={Zhang, Wenyuan and Tang, Jimin and Zhang, Weiqi and Fang, Yi and Liu, Yu-Shen and Han, Zhizhong},
+      booktitle={Advances in Neural Information Processing Systems},
+      year={2025}
+    }
+</code></pre>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a <a rel="license"
+                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+            This webpage template is from <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>. 
+            We sincerely thank <a href="https://keunhong.com/">Keunhong Park</a> for developing and open-sourcing this template.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
