@@ -3,7 +3,16 @@
 # Glossy Synthetic Training Script
 # This script trains on the Glossy Synthetic dataset
 
-gpuid=7
+gpuid=-1
+for ((i=1; i<=9; i++)); do
+    stat2=$(gpustat | awk '{print $11}' | sed -n "${i}p" 2>/dev/null)
+    if [ -n "$stat2" ] && [[ "$stat2" =~ ^[0-9]+$ ]] && [ "$stat2" -lt 100 ]; then
+        echo "running on gpu $((i-2))"
+        gpuid=$((i-2))
+        break
+    fi
+done
+
 if [ "$gpuid" -ge 0 ]; then
     export CUDA_VISIBLE_DEVICES=${gpuid}
     
@@ -12,9 +21,7 @@ if [ "$gpuid" -ge 0 ]; then
     data_dir=/data14_2/tjm/code/ref-gaussian/data/GlossySynthetic_blender
     
     # Prior paths
-    geowizard_path=/data14_2/tjm/code/GeoWizard/output
     metric3d_path=/data14_2/tjm/code/Metric3D/output_glossy
-    idarb_path=/data14_2/tjm/code/IDArb/output
     
     # Output directory
     output_dir=./output_glossy
@@ -39,7 +46,5 @@ if [ "$gpuid" -ge 0 ]; then
         --no-use_perceptual_loss \
         --no-use_metallic_warp_loss \
         --lambda_perceptual_loss 0.05 \
-        --geowizard_path ${geowizard_path} \
-        --metric3d_path ${metric3d_path} \
-        --idarb_path ${idarb_path}
+        --metric3d_path ${metric3d_path}
 fi

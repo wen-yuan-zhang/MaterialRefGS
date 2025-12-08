@@ -1,25 +1,21 @@
-#python train.py -s ./data/refreal/gardenspheres --eval --iterations 20000 --indirect_from_iter 10000 --volume_render_until_iter 0 --initial 1 --init_until_iter 3000 --lambda_normal_smooth 0.45 -r 4 
+gpuid=-1
+for ((i=1; i<=9; i++)); do
+    stat2=$(gpustat | awk '{print $11}' | sed -n "${i}p" 2>/dev/null)
+    if [ -n "$stat2" ] && [[ "$stat2" =~ ^[0-9]+$ ]] && [ "$stat2" -lt 100 ]; then
+        echo "running on gpu $((i-2))"
+        gpuid=$((i-2))
+        break
+    fi
+done
 
-# gpuid=-1
-# for ((i=1; i<=9; i++)); do
-#     stat2=$(gpustat | awk '{print $11}' | sed -n "${i}p" 2>/dev/null)
-#     if [ -n "$stat2" ] && [[ "$stat2" =~ ^[0-9]+$ ]] && [ "$stat2" -lt 100 ]; then
-#         echo "running on gpu $((i-2))"
-#         gpuid=$((i-2))
-#         break
-#     fi
-# done
-
-gpuid=1
 if [ "$gpuid" -ge 0 ]; then
     export CUDA_VISIBLE_DEVICES=${gpuid}
-    scene=gardenspheres
+    scene=gardenspheres # change this to your scene name
     data_dir=/data14_2/tjm/code/ref-gaussian/data/refreal
+    output_dir=output_refreal
     
     # Prior paths
-    geowizard_path=/data14_2/tjm/code/GeoWizard/output
     metric3d_path=/data14_2/tjm/code/Metric3D/output
-    idarb_path=/data14_2/tjm/code/IDArb/output
     ref_score_path=/data14_2/tjm/code/ref-gaussian-tjm/tmp_ref_scores_merge_mask2
     
     python train_refreal.py \
@@ -41,13 +37,8 @@ if [ "$gpuid" -ge 0 ]; then
         --multi_view_ncc_weight 0.15\
         --lambda_dist 1000\
         --perceptual_loss_start_iter 16000\
-        -m output_refreal\
+        -m ${output_dir}/${scene}\
         --ref_score_loss_weight 0.01\
-        --geowizard_path ${geowizard_path}\
         --metric3d_path ${metric3d_path}\
-        --idarb_path ${idarb_path}\
         --ref_score_path ${ref_score_path}
 fi
-# \
-#         --start_checkpoint /data1/tjm/code/ref-gaussian/output/gardenspheres/gardenspheres-0331_1516/chkpnt10000.pth
-    #--start_checkpoint /data1/tjm/code/ref-gaussian/output/gardenspheres/gardenspheres-0319_1633/chkpnt10000.pth
