@@ -19,14 +19,8 @@
 
 ## Video
 <video width="780" controls muted loop>
-  <source src="https://wen-yuan-zhang.github.io/MaterialRefGS/resources/video.mp4" type="video/mp4">
+  <source src="(https://github.com/user-attachments/assets/f828cb89-133b-41ed-b020-835403b64ceb)" type="video/mp4">
 </video>
-
-
-
-https://github.com/user-attachments/assets/f828cb89-133b-41ed-b020-835403b64ceb
-
-
 
 ## Pipeline
 <p align="center">
