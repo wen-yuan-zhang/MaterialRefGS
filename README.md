@@ -19,7 +19,7 @@
 
 ## Video
 <video width="780" controls muted loop>
-  <source src="assets/video.mp4" type="video/mp4">
+  <source src="https://wen-yuan-zhang.github.io/MaterialRefGS/resources/video.mp4" type="video/mp4">
 </video>
 
 
