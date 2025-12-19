@@ -22,6 +22,11 @@
   <source src="https://wen-yuan-zhang.github.io/MaterialRefGS/resources/video.mp4" type="video/mp4">
 </video>
 
+<p align="center">
+  <a href="https://github.com/user-attachments/assets/f828cb89-133b-41ed-b020-835403b64ceb">
+    https://github.com/user-attachments/assets/f828cb89-133b-41ed-b020-835403b64ceb
+  </a>
+</p>
 
 
 ## Pipeline
