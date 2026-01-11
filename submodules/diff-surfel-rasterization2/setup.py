@@ -9,18 +9,18 @@
 # For inquiries contact  george.drettakis@inria.fr
 #
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from torch.utils.cpp_extension import CUDAExtension, BuildExtension
 import os
 os.path.dirname(os.path.abspath(__file__))
 
 setup(
     name="diff_surfel_rasterization2",
-    packages=['diff_surfel_rasterization2'],
+    packages=["diff_surfel_rasterization2"],
     version='0.0.1',
     ext_modules=[
         CUDAExtension(
-            name="diff_surfel_rasterization._C",
+            name="diff_surfel_rasterization2._C",
             sources=[
             "cuda_rasterizer/rasterizer_impl.cu",
             "cuda_rasterizer/forward.cu",

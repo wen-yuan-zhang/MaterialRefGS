@@ -121,7 +121,7 @@ __device__ void compute_transmat(
 	// 对应论文中的 (WH)^T
     T = glm::transpose(splat2world) * world2ndc * ndc2pix;
 
-    normal = transformVec4x3({L[2].x, L[2].y, L[2].z}, viewmatrix); // world2view transform
+    normal = transformVec4x3({L[2].x, L[2].y, L[2].z}, viewmatrix);
 }
 
 // Computing the bounding box of the 2D Gaussian and its center
@@ -298,6 +298,7 @@ renderCUDA(
 	uint2 pix = { pix_min.x + block.thread_index().x, pix_min.y + block.thread_index().y }; // 当前线程处理的像素坐标
 	uint32_t pix_id = W * pix.y + pix.x; // 当前线程处理的像素ID
 	float2 pixf = { (float)pix.x, (float)pix.y }; // 当前线程处理的像素坐标（浮点型）
+	const float2 ray = { (pixf.x - W * 0.5) / focal_x, (pixf.y - H * 0.5) / focal_x };
 
 	// Check if this thread is associated with a valid pixel or outside.
 	bool inside = pix.x < W && pix.y < H; // 判断当前线程是否处理有效像素
@@ -458,6 +459,7 @@ renderCUDA(
 		for (int ch = 0; ch < 3; ch++) out_others[pix_id + (NORMAL_OFFSET + ch) * H * W] = N[ch]; // 存储法线
 		out_others[pix_id + MIDDEPTH_OFFSET * H * W] = median_depth; // 存储中值深度
 		out_others[pix_id + DISTORTION_OFFSET * H * W] = distortion; // 存储失真
+		out_others[pix_id + UNBIASED_DEPTH_OFFSET * H * W] = F[S-1] / -(N[0] * ray.x + N[1] * ray.y + N[2] + 1.0e-8);;
 #endif
 	}
 }

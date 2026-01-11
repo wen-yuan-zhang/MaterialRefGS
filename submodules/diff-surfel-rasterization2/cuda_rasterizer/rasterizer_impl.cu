@@ -357,6 +357,8 @@ void CudaRasterizer::Rasterizer::backward(
 	const float* means3D,
 	const float* shs,
 	const float* colors_precomp,
+	const float* out_others_pixel,
+	const float* out_features_pixel,
 	const float* features, // //
 	const float* scales,
 	const float scale_modifier,
@@ -418,6 +420,8 @@ void CudaRasterizer::Rasterizer::backward(
 		geomState.means2D,
 		geomState.normal_opacity,
 		color_ptr,
+		out_others_pixel,
+		out_features_pixel,
 		features, // //
 		transMat_ptr,
 		depth_ptr,

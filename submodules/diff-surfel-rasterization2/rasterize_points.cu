@@ -89,7 +89,7 @@ RasterizeGaussiansCUDA(
   torch::Tensor out_contrib = torch::full({1, H, W}, 0.0, int_opts);	// //
   torch::Tensor out_color = torch::full({NUM_CHANNELS, H, W}, 0.0, float_opts);
   torch::Tensor out_feature = torch::full({S, H, W}, 0.0, float_opts);	// //
-  torch::Tensor out_others = torch::full({3+3+1, H, W}, 0.0, float_opts);
+  torch::Tensor out_others = torch::full({3+3+1+1, H, W}, 0.0, float_opts);
   torch::Tensor radii = torch::full({P}, 0, means3D.options().dtype(torch::kInt32));
   
   
@@ -148,6 +148,8 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Te
 	 const torch::Tensor& background,
 	const torch::Tensor& means3D,
 	const torch::Tensor& radii,
+	const torch::Tensor& out_others_pixel,
+	const torch::Tensor& out_features_pixel,
 	const torch::Tensor& colors,
 	const torch::Tensor& features,	// //
 	const torch::Tensor& scales,
@@ -175,6 +177,8 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Te
   CHECK_INPUT(background);
   CHECK_INPUT(means3D);
   CHECK_INPUT(radii);
+  CHECK_INPUT(out_others_pixel);
+  CHECK_INPUT(out_features_pixel);
   CHECK_INPUT(colors);
   CHECK_INPUT(scales);
   CHECK_INPUT(rotations);
@@ -217,6 +221,8 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Te
 	  means3D.contiguous().data_ptr<float>(),
 	  sh.contiguous().data_ptr<float>(),
 	  colors.contiguous().data_ptr<float>(),
+	  out_others_pixel.contiguous().data_ptr<float>(),
+	  out_features_pixel.contiguous().data_ptr<float>(),
 	  features.contiguous().data_ptr<float>(),	// //
 	  scales.data_ptr<float>(),
 	  scale_modifier,

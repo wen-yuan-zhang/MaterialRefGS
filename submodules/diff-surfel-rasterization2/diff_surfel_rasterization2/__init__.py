@@ -19,9 +19,6 @@ def cpu_deep_copy_tuple(input_tuple):
     copied_tensors = [item.cpu().clone() if isinstance(item, torch.Tensor) else item for item in input_tuple]
     return tuple(copied_tensors)
 
-# 需要添加distance的渲染以及plane depth的估计部分
-# forward部分，输入all_map(这里的depth)需要添加一个维度，或者直接给depth加两个特征，distance和plane depth。
-
 def rasterize_gaussians(
     means3D,
     means2D,
@@ -47,7 +44,7 @@ def rasterize_gaussians(
         raster_settings,
     )
 
-class _RasterizeGaussians(torch.autograd.Function): # TODO add depth
+class _RasterizeGaussians(torch.autograd.Function):
     @staticmethod
     def forward(
         ctx,
@@ -101,21 +98,23 @@ class _RasterizeGaussians(torch.autograd.Function): # TODO add depth
         # Keep relevant tensors for backward
         ctx.raster_settings = raster_settings
         ctx.num_rendered = num_rendered
-        ctx.save_for_backward(colors_precomp, features, means3D, scales, rotations, cov3Ds_precomp, radii, sh, geomBuffer, binningBuffer, imgBuffer, contrib)
+        ctx.save_for_backward(depth, feature, colors_precomp, features, means3D, scales, rotations, cov3Ds_precomp, radii, sh, geomBuffer, binningBuffer, imgBuffer, contrib)
         return contrib, color, feature, radii, depth # #
 
     @staticmethod
-    def backward(ctx, grad_out_contrib, grad_out_color, grad_out_feature, grad_radii, grad_depth): # # # TODO: add grad_plane_depth
+    def backward(ctx, grad_out_contrib, grad_out_color, grad_out_feature, grad_radii, grad_depth): # #
 
         # Restore necessary values from context
         num_rendered = ctx.num_rendered
         raster_settings = ctx.raster_settings
-        colors_precomp, features, means3D, scales, rotations, cov3Ds_precomp, radii, sh, geomBuffer, binningBuffer, imgBuffer, contrib = ctx.saved_tensors # #
+        depth, feature, colors_precomp, features, means3D, scales, rotations, cov3Ds_precomp, radii, sh, geomBuffer, binningBuffer, imgBuffer, contrib = ctx.saved_tensors # #
 
         # Restructure args as C++ method expects them
         args = (raster_settings.bg,
                 means3D, 
                 radii, 
+                depth,
+                feature,
                 colors_precomp, 
                 features, # #
                 scales, 

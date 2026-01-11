@@ -32,6 +32,8 @@ namespace BACKWARD
 		const float2* means2D,
 		const float4* normal_opacity,
 		const float* colors,
+		const float* out_others_pixel,
+		const float* out_features_pixel,
 		const float* features, // //
 		const float* transMats,
 		const float* depths,

@@ -154,6 +154,8 @@ renderCUDA(
 	const float4* __restrict__ normal_opacity,
 	const float* __restrict__ transMats,
 	const float* __restrict__ colors,
+	const float* __restrict__ out_others_pixel,
+	const float* __restrict__ out_features_pixel,
 	const float* __restrict__ features, //
 	const float* __restrict__ depths,
 	const float* __restrict__ final_Ts,
@@ -177,6 +179,7 @@ renderCUDA(
 	const uint2 pix = { pix_min.x + block.thread_index().x, pix_min.y + block.thread_index().y };
 	const uint32_t pix_id = W * pix.y + pix.x;
 	const float2 pixf = { (float)pix.x, (float)pix.y };
+	float2 ray = { (pixf.x - W * 0.5) / focal_x, (pixf.y - H * 0.5) / focal_x };
 
 	const bool inside = pix.x < W&& pix.y < H;
 	const uint2 range = ranges[block.group_index().y * horizontal_blocks + block.group_index().x];
@@ -219,16 +222,29 @@ renderCUDA(
 	const int median_contributor = inside ? n_contrib[pix_id + H * W] : 0;
 	float dL_dmedian_depth;
 	float dL_dmax_dweight;
+	float dL_dunbiased_depth;
+	float3 normal_pixel;
+	const float distance = out_features_pixel[(S-1) * H * W + pix_id];
 
 	if (inside) {
 		dL_ddepth = dL_depths[DEPTH_OFFSET * H * W + pix_id];
 		dL_daccum = dL_depths[ALPHA_OFFSET * H * W + pix_id];
 		dL_dreg = dL_depths[DISTORTION_OFFSET * H * W + pix_id];
+		normal_pixel = {out_others_pixel[(NORMAL_OFFSET) * H * W + pix_id],
+			out_others_pixel[(NORMAL_OFFSET+1) * H * W + pix_id],
+			out_others_pixel[(NORMAL_OFFSET+2) * H * W + pix_id]
+		};
+
+		const float tmp = (normal_pixel.x * ray.x + normal_pixel.y * ray.y + normal_pixel.z + 1.0e-8);
 		for (int i = 0; i < 3; i++) 
 			dL_dnormal2D[i] = dL_depths[(NORMAL_OFFSET + i) * H * W + pix_id];
 
 		dL_dmedian_depth = dL_depths[MIDDEPTH_OFFSET * H * W + pix_id];
+		dL_dunbiased_depth = dL_depths[UNBIASED_DEPTH_OFFSET * H * W + pix_id];
 		// dL_dmax_dweight = dL_depths[MEDIAN_WEIGHT_OFFSET * H * W + pix_id];
+		dL_dnormal2D[0] += dL_dunbiased_depth * (distance / (tmp * tmp) * ray.x);
+		dL_dnormal2D[1] += dL_dunbiased_depth * (distance / (tmp * tmp) * ray.y);
+		dL_dnormal2D[2] += dL_dunbiased_depth * (distance / (tmp * tmp));
 	}
 
 	// for compute gradient with respect to depth and normal
@@ -357,7 +373,13 @@ renderCUDA(
 
                 accum_rec_f[ch] = last_alpha * last_feature[ch] + (1.f - last_alpha) * accum_rec_f[ch];
                 last_feature[ch] = feature;
-                const float dL_dchannel_f = dL_dpixel_f[ch];
+				float dL_dchannel_f;
+				if (ch < S-1) {
+                	dL_dchannel_f = dL_dpixel_f[ch]; 
+				} else {
+					const float tmp = (normal_pixel.x * ray.x + normal_pixel.y * ray.y + normal_pixel.z + 1.0e-8); // last channel always be the distance
+					dL_dchannel_f = dL_dpixel_f[ch] + (-dL_dunbiased_depth / tmp);
+				}
 				dL_dalpha += (feature - accum_rec_f[ch]) * dL_dchannel_f;
                 atomicAdd(&(dL_dfeature[global_id * S + ch]), dchannel_dcolor * dL_dchannel_f);
             }
@@ -458,6 +480,9 @@ renderCUDA(
 				const float dG_ddely = -G * FilterInvSquare * d.y;
 				atomicAdd(&dL_dmean2D[global_id].x, dL_dG * dG_ddelx); // not scaled
 				atomicAdd(&dL_dmean2D[global_id].y, dL_dG * dG_ddely); // not scaled
+				// // new metric for densification, please see Densification section in our paper (https://arxiv.org/pdf/2404.10772.pdf) for more details.  //////
+				// const float abs_dL_dmean2D = abs(dL_dG * dG_ddelx * ddelx_dx) + abs(dL_dG * dG_ddely * ddely_dy);										 //////
+				// atomicAdd(&dL_dmean2D[global_id].z, abs_dL_dmean2D);																					 //////
 				atomicAdd(&dL_dtransMat[global_id * 9 + 8],  dL_dz); // propagate depth loss
 			}
 
@@ -731,6 +756,8 @@ void BACKWARD::render(
 	const float2* means2D,
 	const float4* normal_opacity,
 	const float* colors,
+	const float* out_others_pixel,
+	const float* out_features_pixel,
 	const float* features, // //
 	const float* transMats,
 	const float* depths,
@@ -757,6 +784,8 @@ void BACKWARD::render(
 		normal_opacity,
 		transMats,
 		colors,
+		out_others_pixel,
+		out_features_pixel,
 		features, // //
 		depths,
 		final_Ts,
